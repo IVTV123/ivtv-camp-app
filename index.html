@@ -10,7 +10,7 @@
 <body class="min-h-screen bg-gray-50">
   <div id="app"></div>
   <script>
-    // --- SVG ICONS (from v2/v3) ---
+    // SVG ICONS
     const SVG = {
       Calendar: `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
       Camera: `<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2"/><circle cx="12" cy="14.5" r="3.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`,
@@ -63,7 +63,7 @@
       return state.campCalendar && state.campCalendar[state.campCalendar.length - 1] || null;
     }
 
-    // --- Editable state from v2, extended with v3 features ---
+    // --- State ---
     const state = {
       activeTab: 'dashboard',
       mobileMenuOpen: false,
@@ -77,15 +77,13 @@
       homepageHeroTitle: 'Welcome to IVTV Summer Camp',
       homepageHeroSubtitle: 'Professional TV Production Training • Summer 2025',
       homepageBoxes: [
-        {}, // dynamically generated (see getHomepageBoxes below)
-        {}, // dynamically generated (see getHomepageBoxes below)
-        {
+        {}, {}, {
           title: "Files Shared",
           icon: "FileText",
           text: "Equipment lists and project guidelines",
           bottomLabel: "Total files:",
           bottomValue: () => state.files.length
-        },
+        }
       ],
       instructors: [
         { name: "Sarah Johnson", title: "Camera & Lighting Specialist", initial: "S" },
@@ -164,6 +162,8 @@
       editingCalendar: false
     };
 
+    // ... (functions: setState, handleAdminLogin, handleAdminLogout, handleNewPost, handleEditPost, handleDeletePost, handleNewFile, handleDeleteFile, expandPost, closeExpandedPost, getHomepageBoxes, EditCalendarModal, addCalendarWeek, removeCalendarWeek, EditCommunityModal, addInstructor, removeInstructor, Navigation, Dashboard, Posts, Files, Community, modals, etc. go here. Continue to next part)
+        // --- State Logic/Setters ---
     function setState(newValues) {
       Object.assign(state, newValues);
       renderApp();
@@ -176,11 +176,7 @@
         alert('Incorrect password');
       }
     }
-
-    function handleAdminLogout() {
-      setState({isAdmin: false, activeTab: 'dashboard'});
-    }
-
+    function handleAdminLogout() { setState({isAdmin: false, activeTab: 'dashboard'}); }
     function handleNewPost(form) {
       const postData = Object.fromEntries(new FormData(form));
       const newPost = {
@@ -192,23 +188,18 @@
       };
       setState({posts: [newPost, ...state.posts], showNewPostForm: false});
     }
-
     function handleEditPost(form) {
       const postData = Object.fromEntries(new FormData(form));
       setState({
-        posts: state.posts.map(post =>
-          post.id == state.editingPost.id ? {...post, ...postData} : post
-        ),
+        posts: state.posts.map(post => post.id == state.editingPost.id ? {...post, ...postData} : post),
         editingPost: null
       });
     }
-
     function handleDeletePost(postId) {
       if (confirm('Are you sure you want to delete this post?')) {
         setState({posts: state.posts.filter(post => post.id != postId)});
       }
     }
-
     function handleNewFile(form) {
       const fileData = Object.fromEntries(new FormData(form));
       const newFile = {
@@ -218,22 +209,17 @@
       };
       setState({files: [newFile, ...state.files], showNewFileForm: false});
     }
-
     function handleDeleteFile(fileId) {
       if (confirm('Are you sure you want to delete this file?')) {
         setState({files: state.files.filter(file => file.id != fileId)});
       }
     }
-
     function expandPost(postId) {
       const post = state.posts.find(p => p.id == postId);
       setState({expandedPost: post});
     }
-    function closeExpandedPost() {
-      setState({expandedPost: null});
-    }
-
-    // --- Dynamic homepage boxes (from v3) ---
+    function closeExpandedPost() { setState({expandedPost: null}); }
+    // Dynamic homepage boxes
     function getHomepageBoxes() {
       const week = getCurrentCampWeek(state);
       let today = new Date();
@@ -265,8 +251,7 @@
       const filesBox = state.homepageBoxes[2];
       return [thisWeekBox, lastUpdateBox, filesBox];
     }
-
-    // --- Calendar modal from v3 ---
+    // Calendar modal
     function EditCalendarModal() {
       return `
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -303,8 +288,7 @@
       state.campCalendar.splice(idx, 1);
       renderApp();
     }
-
-    // --- Community Modal (dynamic instructors, v3) ---
+    // Community Modal (dynamic instructors)
     function EditCommunityModal() {
       return `
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -353,7 +337,7 @@
       renderApp();
     }
 
-    // --- Main Navigation (from v2/v3) ---
+    // --- Navigation ---
     function Navigation() {
       return `
       <nav class="bg-gray-900 text-white p-4 sticky top-0 z-50">
@@ -407,8 +391,7 @@
       </nav>
       `;
     }
-
-    // --- Dashboard (from v2, with v3 automation features) ---
+        // --- Dashboard ---
     function Dashboard() {
       const boxes = getHomepageBoxes();
       return `
@@ -469,10 +452,323 @@
       `;
     }
 
-    // --- Posts, Files, ExpandedPostModal, AdminLoginModal, NewPostForm, EditPostForm, NewFileForm, etc. ---
-    // (Use these unchanged from your v2)
+    // --- Posts Page ---
+    function Posts() {
+      return `
+      <div class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">Posts & Updates</h2>
+          ${state.isAdmin ? `
+            <button onclick="setState({showNewPostForm:true})"
+              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2">
+              ${SVG.Upload}<span>New Post</span>
+            </button>
+          ` : ""}
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          ${state.posts.map(post=>`
+            <div class="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden group hover:ring-2 hover:ring-red-400 transition cursor-pointer"
+              onclick="expandPost(${post.id})"
+              tabindex="0" aria-label="Expand post '${post.title}'"
+            >
+              ${
+                post.type==='video' ?
+                  `<div class="relative bg-gray-900 h-48 flex items-center justify-center">
+                    <div class="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                      <button class="bg-red-600 text-white p-4 rounded-full hover:bg-red-700 transition-colors" onclick="event.stopPropagation()">${SVG.Play}</button>
+                    </div>
+                    ${SVG.VideoLarge}
+                  </div>` :
+                post.type==='photo' ?
+                  `<div class="relative bg-gray-200 h-48 flex items-center justify-center">${SVG.CameraLarge}</div>` : ''
+              }
+              <div class="p-6">
+                <div class="flex items-center justify-between mb-3">
+                  <div class="flex items-center space-x-2">
+                    <span class="px-2 py-1 rounded-full text-xs font-semibold ${
+                      post.type === 'video' ? 'bg-red-100 text-red-800' :
+                      post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
+                      'bg-green-100 text-green-800'
+                    }">${post.type.toUpperCase()}</span>
+                    <span class="text-sm text-gray-500">${post.date.split('T')[0]}</span>
+                  </div>
+                  ${state.isAdmin ? `
+                    <div class="flex space-x-2">
+                      <button onclick="event.stopPropagation();setState({editingPost:state.posts.find(p=>p.id==${post.id})})"
+                        class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
+                      <button onclick="event.stopPropagation();handleDeletePost(${post.id})"
+                        class="text-red-600 hover:text-red-800 text-sm">Delete</button>
+                    </div>
+                  ` : ""}
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-3">${post.title}</h3>
+                <p class="text-gray-600 mb-4">${post.content}</p>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4 text-sm text-gray-500"><span>By ${post.author}</span></div>
+                  <div class="flex items-center space-x-4">
+                    <button onclick="event.stopPropagation()" class="flex items-center space-x-1 text-gray-500 hover:text-red-500 transition-colors">${SVG.Heart}<span>${post.likes}</span></button>
+                    <button onclick="event.stopPropagation()" class="flex items-center space-x-1 text-gray-500 hover:text-blue-500 transition-colors">${SVG.MessageCircle}<span>${post.comments}</span></button>
+                    <button onclick="event.stopPropagation()" class="flex items-center space-x-1 text-gray-500 hover:text-green-500 transition-colors">${SVG.Share2}</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      `;
+    }
 
-    // --- Render and update logic (from v2/v3) ---
+    // --- Files Page ---
+    function Files() {
+      return `
+      <div class="space-y-6">
+        <div class="flex justify-between items-center">
+          <h2 class="text-2xl font-bold text-gray-800">Shared Files</h2>
+          ${state.isAdmin ? `
+            <button onclick="setState({showNewFileForm:true})"
+              class="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center space-x-2">
+              ${SVG.Upload}<span>Upload File</span>
+            </button>
+          ` : ""}
+        </div>
+        <div class="bg-white rounded-xl shadow-lg border border-gray-200">
+          <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800">Recent Files</h3>
+          </div>
+          <div class="divide-y divide-gray-200">
+            ${state.files.map(file=>`
+              <div class="p-6 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <div class="p-2 bg-red-100 rounded-lg">${SVG.FileText}</div>
+                    <div>
+                      <h4 class="font-semibold text-gray-800">${file.name}</h4>
+                      <div class="text-sm text-gray-500"><span>${file.size}</span> • <span>Uploaded ${file.uploadDate}</span></div>
+                    </div>
+                  </div>
+                  <div class="flex items-center space-x-4">
+                    <button class="flex items-center space-x-2 text-red-600 hover:text-red-700 transition-colors">
+                      ${SVG.Download}<span>Download</span>
+                    </button>
+                    ${state.isAdmin ? `<button onclick="handleDeleteFile(${file.id})" class="text-red-600 hover:text-red-800 text-sm">Delete</button>` : ""}
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+      `;
+    }
+
+    // --- Community Page ---
+    function Community() {
+      return `
+      <div class="space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-800">Community</h2>
+          ${state.isAdmin ? `<button onclick="setState({editingCommunity:true})" class="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">Edit</button>` : ''}
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Instructors</h3>
+            <div class="space-y-4">
+              ${state.instructors.map(inst => `
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">${inst.initial}</div>
+                  <div>
+                    <p class="font-semibold text-gray-800">${inst.name}</p>
+                    <p class="text-sm text-gray-600">${inst.title}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Camp Stats</h3>
+            <div class="space-y-3">
+              ${state.campStats.map(stat => `
+                <div class="flex justify-between">
+                  <span class="text-gray-600">${stat.label}</span>
+                  <span class="font-semibold${stat.highlight ? ' text-red-600' : ''}">${stat.value}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+      `;
+    }
+        // --- Expanded Post Modal ---
+    function ExpandedPostModal() {
+      const post = state.expandedPost;
+      if (!post) return '';
+      return `
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl mx-2 relative animate-fadein">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl" onclick="closeExpandedPost()" aria-label="Close">${SVG.X}</button>
+            <div>
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold ${
+                  post.type === 'video' ? 'bg-red-100 text-red-800' :
+                  post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
+                  'bg-green-100 text-green-800'
+                }">${post.type.toUpperCase()}</span>
+                <span class="text-sm text-gray-500">${post.date.split('T')[0]}</span>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-2">${post.title}</h2>
+              <div class="mb-4 text-gray-600">${post.content}</div>
+              <div class="flex items-center space-x-4 mb-4">
+                <span class="text-sm text-gray-500">By ${post.author}</span>
+                <span class="flex items-center space-x-1 text-gray-500">${SVG.Heart}<span>${post.likes}</span></span>
+                <span class="flex items-center space-x-1 text-gray-500">${SVG.MessageCircle}<span>${post.comments}</span></span>
+              </div>
+              ${post.type === 'photo' && post.thumbnail ? `<img src="${post.thumbnail}" alt="Photo post" class="rounded-lg border w-full max-h-72 object-cover mb-4">` : ''}
+              ${post.type === 'video' && post.thumbnail ? `<div class="w-full flex justify-center mb-4"><img src="${post.thumbnail}" alt="Video thumbnail" class="rounded-lg border w-full max-h-72 object-cover"></div>` : ''}
+            </div>
+          </div>
+        </div>
+        <style>
+          .animate-fadein { animation: fadein .2s; }
+          @keyframes fadein { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+        </style>
+      `;
+    }
+    // --- Admin Login Modal ---
+    function AdminLoginModal() {
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Admin Login</h3>
+          <input type="password" placeholder="Enter admin password" id="admin-password-input"
+            value="${state.adminPassword || ''}"
+            class="w-full p-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-red-500"/>
+          <div class="flex space-x-3">
+            <button onclick="handleAdminLogin()"
+              class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">Login</button>
+            <button onclick="setState({showAdminLogin:false,adminPassword:''})"
+              class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+          </div>
+        </div>
+      </div>
+      `;
+    }
+    // --- New Post Modal ---
+    function NewPostForm() {
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Create New Post</h3>
+          <form id="new-post-form">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Post Type</label>
+                <select name="type" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  <option value="blog">Blog Post</option>
+                  <option value="video">Video</option>
+                  <option value="photo">Photo</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter post title"/>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <textarea name="content" required rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter post content"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                <input type="text" name="author" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter author name"/>
+              </div>
+            </div>
+            <div class="flex space-x-3 mt-6">
+              <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">Create Post</button>
+              <button type="button" onclick="setState({showNewPostForm:false})" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      `;
+    }
+    // --- Edit Post Modal ---
+    function EditPostForm() {
+      const post = state.editingPost;
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Edit Post</h3>
+          <form id="edit-post-form">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Post Type</label>
+                <select name="type" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  <option value="blog" ${post.type==='blog'?'selected':''}>Blog Post</option>
+                  <option value="video" ${post.type==='video'?'selected':''}>Video</option>
+                  <option value="photo" ${post.type==='photo'?'selected':''}>Photo</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input type="text" name="title" value="${post.title.replace(/"/g,'&quot;')}" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter post title"/>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                <textarea name="content" required rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter post content">${post.content}</textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Author</label>
+                <input type="text" name="author" value="${post.author.replace(/"/g,'&quot;')}" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter author name"/>
+              </div>
+            </div>
+            <div class="flex space-x-3 mt-6">
+              <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">Update Post</button>
+              <button type="button" onclick="setState({editingPost:null})" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      `;
+    }
+    // --- New File Modal ---
+    function NewFileForm() {
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-xl shadow-lg max-w-md w-full mx-4">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Upload New File</h3>
+          <form id="new-file-form">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">File Name</label>
+                <input type="text" name="name" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter file name (e.g., document.pdf)"/>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">File Type</label>
+                <select name="type" class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                  <option value="pdf">PDF</option>
+                  <option value="doc">Document</option>
+                  <option value="xls">Spreadsheet</option>
+                  <option value="img">Image</option>
+                  <option value="vid">Video</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">File Size</label>
+                <input type="text" name="size" required class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="Enter file size (e.g., 2.5 MB)"/>
+              </div>
+            </div>
+            <div class="flex space-x-3 mt-6">
+              <button type="submit" class="flex-1 bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">Upload File</button>
+              <button type="button" onclick="setState({showNewFileForm:false})" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      `;
+    }
+
+    // --- Main Render Loop ---
     function renderApp() {
       const container = document.getElementById('app');
       container.innerHTML = `
@@ -495,7 +791,7 @@
         ${state.editingCalendar ? EditCalendarModal() : ''}
       `;
 
-      // Admin Calendar Form (v3)
+      // Handle calendar edit modal
       if (state.editingCalendar) {
         document.getElementById('edit-calendar-form').onsubmit = function(e) {
           e.preventDefault();
@@ -511,8 +807,7 @@
           setState({ campCalendar: calendar, editingCalendar: false });
         };
       }
-
-      // Dynamic instructor form (v3)
+      // Handle dynamic instructors on community modal
       if (state.editingCommunity) {
         document.getElementById('edit-community-form').onsubmit = function(e) {
           e.preventDefault();
@@ -540,8 +835,7 @@
           });
         };
       }
-
-      // Homepage hero form (v2, unchanged)
+      // Edit homepage modal
       if (state.editingHomepage) {
         document.getElementById('edit-homepage-form').onsubmit = function(e) {
           e.preventDefault();
@@ -560,8 +854,7 @@
           });
         };
       }
-
-      // Other modals (v2, unchanged)
+      // Other modals
       if (state.showAdminLogin) {
         const input = document.getElementById('admin-password-input');
         input.focus();
@@ -607,11 +900,9 @@
         document.removeEventListener('keydown', onKeyDownExpandModal);
       }
     }
-
     function onKeyDownExpandModal(e) {
       if (e.key === "Escape") closeExpandedPost();
     }
-
     // Expose functions for global onclick
     window.setState = setState;
     window.handleAdminLogin = handleAdminLogin;
