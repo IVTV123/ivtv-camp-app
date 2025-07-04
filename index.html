@@ -33,23 +33,7 @@
       VideoRed: `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="7" width="15" height="10" rx="2"/><polygon points="16 7 22 12 16 17 16 7"/></svg>`,
       CameraRed: `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2"/><circle cx="12" cy="14.5" r="3.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
     };
-
-    // ... (REMAINING CODE IS AS PER THE PREVIOUS FILE index_full_with_extra_pages.html)
-    // This will include:
-    // - All state logic including extra pages
-    // - Navigation with new tabs
-    // - All page functions (Dashboard, Posts, Files, Community, Recap Shorts, Student Videos, Gallery, Week-by-Week)
-    // - All modals for admin editing of extra pages
-    // - Lightbox functionality for video/image click-to-expand
-    // - LocalStorage persistence
-    // - Main renderApp routing that shows all pages, as well as your originals
-
-    // Please see the previous, very long, code for the full implementation; this file will be extremely lengthy but is copy-paste ready!
-    // If you would like the full literal merged file pasted in its entirety, let me know and I will render it in chunks.
-    
-  </script>
-    <!-- ================= ICONS & HELPERS, STATE, ETC. (continued) ================== -->
-    // --- Helper Functions ---
+        // ========== Helpers ==========
     function getTimeAgo(dateStr) {
       const now = new Date();
       const then = new Date(dateStr);
@@ -77,8 +61,137 @@
       return state.campCalendar && state.campCalendar[state.campCalendar.length - 1] || null;
     }
 
-    // --- State ---
-    // (see previous part for the full state object, including recapShorts, studentVideos, studentGallery, weekExpect, etc.)
+    // ================= STATE & LOCALSTORAGE ==================
+    const state = {
+      activeTab: 'dashboard',
+      mobileMenuOpen: false,
+      isAdmin: false,
+      showAdminLogin: false,
+      adminPassword: '',
+      showNewPostForm: false,
+      showNewFileForm: false,
+      editingPost: null,
+      expandedPost: null,
+      homepageHeroTitle: 'Welcome to IVTV Summer Camp',
+      homepageHeroSubtitle: 'Professional TV Production Training • Summer 2025',
+      homepageBoxes: [
+        {}, {}, {
+          title: "Files Shared",
+          icon: "FileText",
+          text: "Equipment lists and project guidelines",
+          bottomLabel: "Total files:",
+          bottomValue: () => state.files.length
+        }
+      ],
+      instructors: [
+        { name: "Sarah Johnson", title: "Camera & Lighting Specialist", initial: "S" },
+        { name: "Mike Chen", title: "Audio & Post-Production", initial: "M" }
+      ],
+      campStats: [
+        { label: "Total Students:", value: "24" },
+        { label: "Projects Started:", value: "8" },
+        { label: "Skills Workshops:", value: "12" },
+        { label: "Days Remaining:", value: "12", highlight: true }
+      ],
+      posts: [
+        {
+          id: 1,
+          type: 'video',
+          title: 'Day 1: Camera Basics Workshop',
+          content: 'Students learned the fundamentals of camera operation and composition.',
+          author: 'Instructor Sarah',
+          date: '2025-07-01T09:00:00',
+          likes: 15,
+          comments: 3,
+          thumbnail: 'https://placehold.co/400x225'
+        },
+        {
+          id: 2,
+          type: 'photo',
+          title: 'Behind the Scenes: Set Design',
+          content: 'Amazing creativity from our campers designing their first TV set!',
+          author: 'Instructor Mike',
+          date: '2025-07-02T16:00:00',
+          likes: 22,
+          comments: 8,
+          thumbnail: 'https://placehold.co/400x300'
+        },
+        {
+          id: 3,
+          type: 'blog',
+          title: 'Week 1 Progress Report',
+          content: 'This week our campers have made incredible progress learning the fundamentals of television production. From camera operation to lighting techniques, every student is developing their unique creative voice.',
+          author: 'Camp Director',
+          date: '2025-07-03T18:00:00',
+          likes: 28,
+          comments: 12
+        }
+      ],
+      files: [
+        {
+          id: 1,
+          name: 'Camp_Schedule_Week1.pdf',
+          type: 'pdf',
+          size: '2.3 MB',
+          uploadDate: '2025-07-01'
+        },
+        {
+          id: 2,
+          name: 'Equipment_List.docx',
+          type: 'doc',
+          size: '1.1 MB',
+          uploadDate: '2025-07-02'
+        },
+        {
+          id: 3,
+          name: 'Student_Projects_Guidelines.pdf',
+          type: 'pdf',
+          size: '3.2 MB',
+          uploadDate: '2025-07-03'
+        }
+      ],
+      campCalendar: [
+        { start: "2025-07-01", end: "2025-07-05", theme: "Camera & Lighting", },
+        { start: "2025-07-06", end: "2025-07-12", theme: "Editing & Post-Production" },
+        { start: "2025-07-13", end: "2025-07-19", theme: "On-Air Presentation" }
+      ],
+      editingHomepage: false,
+      editingCommunity: false,
+      editingCalendar: false,
+      // Extra pages state:
+      recapShorts: {
+        videos: [
+          { title: "Week 1 Recap", youtube: "dQw4w9WgXcQ", thumb: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg" }
+        ],
+        desc: "Catch up with the best moments from each week of camp! More shorts coming soon."
+      },
+      studentVideos: [
+        { title: "News Flash by Team Alpha", desc: "A creative newscast project by our campers!", youtube: "STUDENT_VIDEO_ID_1", thumb: "" },
+        { title: "Behind the Scenes by Team Beta", desc: "Documentary on camp life and teamwork.", youtube: "STUDENT_VIDEO_ID_2", thumb: "" }
+      ],
+      studentGallery: [
+        { url: "https://placehold.co/400x300", caption: "Team Alpha hard at work" },
+        { url: "https://placehold.co/400x300", caption: "Fun with lighting" }
+      ],
+      countdown: {
+        nextWeekStart: "2025-07-07T09:00:00",
+        desc: "Get ready for the next chapter of your camp adventure!"
+      },
+      weekExpect: [
+        {
+          title: "Week 1: Camera & Lighting",
+          desc: "Hands-on training with cameras, composition, lighting, and fundamentals of visual storytelling. Expect workshops, group activities, and your first recording projects!"
+        },
+        {
+          title: "Week 2: Editing & Post-Production",
+          desc: "Dive into video editing, sound design, and special effects. You'll learn how to turn raw footage into a finished program using industry tools."
+        },
+        {
+          title: "Week 3: On-Air Presentation",
+          desc: "Step in front of the camera! Practice live presentation, teleprompter reading, and teamwork to produce your own TV segments."
+        }
+      ]
+    };
 
     // --- Load saved state from localStorage if available ---
     let saved = localStorage.getItem('ivtvCampState');
@@ -159,16 +272,115 @@
         </nav>
       `;
     }
-    // ... (more to come: page functions, modals, lightbox, renderApp...)
+        // =================== PAGE RENDER FUNCTIONS ===================
+    // Dashboard, Posts, Files, Community, Recap Shorts, Student Videos, Gallery, Week-by-Week
 
-  </script>
-    <script>
-    // =================== PAGE RENDER FUNCTIONS ===================
-    // (Dashboard, Posts, Files, Community, Recap Shorts, Student Videos, Gallery, Week-by-Week)
-    // ... (the full Dashboard, Posts, Files, Community from your Version 11 code here) ...
-    // For space, we focus here on the extra pages and admin modals.
+    function Dashboard() {
+      return `
+        <section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200 flex flex-col items-center" id="countdown-section">
+          <div class="flex justify-between w-full items-center mb-2">
+            <h2 class="text-2xl font-bold text-gray-900">⏳ Countdown to Next Week</h2>
+          </div>
+          <div id="countdown-timer" class="text-4xl font-mono text-red-600 mt-2 mb-1"></div>
+          <p class="text-gray-600" id="countdown-desc">${state.countdown.desc}</p>
+        </section>
+        <div class="max-w-4xl mx-auto mt-8">
+          <h2 class="text-xl font-bold text-gray-900 mb-4">Welcome to the IVTV Summer Camp Dashboard</h2>
+          <div class="text-gray-600">Use the navigation above to explore Recap Shorts, Student Videos, Gallery, and Week-by-Week info.</div>
+        </div>
+      `;
+    }
 
-    // ========== Recap Shorts Page ==========
+    function Posts() {
+      return `
+        <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Camp Posts & Highlights</h2>
+            ${state.isAdmin ? `<button onclick="setState({showNewPostForm:true})"
+              class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">New Post</button>` : ""}
+          </div>
+          <div class="divide-y">
+            ${state.posts.map(post => `
+              <div class="py-4 flex items-start space-x-4">
+                <div>
+                  ${post.type === 'video' ? SVG.Video : post.type === 'photo' ? SVG.Camera : SVG.FileText}
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-semibold text-lg">${post.title}</h3>
+                  <div class="text-gray-600 text-sm mb-1">${getTimeAgo(post.date)} by ${post.author}</div>
+                  <div class="mb-2">${post.content}</div>
+                  <div class="flex items-center gap-4 text-xs text-gray-500">
+                    <span>${SVG.Heart} ${post.likes} Likes</span>
+                    <span>${SVG.MessageCircle} ${post.comments} Comments</span>
+                    ${state.isAdmin ? `<button onclick="editPost(${post.id})" class="text-blue-600 ml-4">Edit</button>` : ""}
+                  </div>
+                </div>
+                ${post.thumbnail ? `<img src="${post.thumbnail}" alt="" class="w-32 h-18 object-cover rounded-lg ml-4" />` : ""}
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      `;
+    }
+
+    function Files() {
+      return `
+        <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Shared Camp Files</h2>
+            ${state.isAdmin ? `<button onclick="setState({showNewFileForm:true})"
+              class="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700">Upload File</button>` : ""}
+          </div>
+          <table class="w-full table-auto">
+            <thead><tr class="text-left text-gray-500 text-xs">
+              <th>Name</th><th>Type</th><th>Size</th><th>Uploaded</th>
+            </tr></thead>
+            <tbody>
+              ${state.files.map(f => `
+                <tr class="border-t">
+                  <td>${SVG.FileText} ${f.name}</td>
+                  <td>${f.type}</td>
+                  <td>${f.size}</td>
+                  <td>${f.uploadDate}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function Community() {
+      return `
+        <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Camp Community</h2>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            ${state.instructors.map(i => `
+              <div class="bg-gray-100 rounded-lg p-4 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center text-2xl font-bold">${i.initial}</div>
+                <div>
+                  <div class="font-semibold">${i.name}</div>
+                  <div class="text-xs text-gray-500">${i.title}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="mt-8">
+            <h3 class="font-semibold text-lg mb-2">Camp Stats</h3>
+            <div class="flex flex-wrap gap-4">
+              ${state.campStats.map(s =>
+                `<div class="px-4 py-2 bg-gray-50 rounded-lg border ${s.highlight ? 'border-red-500 text-red-600 font-bold' : 'border-gray-200'}">${s.label} <span class="font-mono">${s.value}</span></div>`
+              ).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ...Extra page render functions, modals, and lightbox come in the next chunk!...
+        // ========== Extra Pages ==========
     function RecapShortsPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -189,7 +401,7 @@
         </div>
       `;
     }
-    // ========== Student Videos Page ==========
+
     function StudentVideosPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -210,7 +422,7 @@
         </div>
       `;
     }
-    // ========== Student Gallery Page ==========
+
     function StudentGalleryPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -229,7 +441,7 @@
         </div>
       `;
     }
-    // ========== Week-by-Week Expectations Page ==========
+
     function WeekExpectPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -249,11 +461,8 @@
       `;
     }
 
-    // ... (admin modals and lightbox functions in next chunk)
-
-  </script>
-    <script>
-    // =================== ADMIN MODALS FOR EXTRA PAGES ===================
+    // ...Admin modals, lightbox, and main render function in next chunk!...
+        // =================== ADMIN MODALS FOR EXTRA PAGES ===================
     function editRecapShortsModal() {
       let vlist = state.recapShorts.videos.map((v,i)=>`
         <div class="mb-2 flex items-center space-x-2">
@@ -470,19 +679,7 @@
     function closeLightbox() {
       document.getElementById('lightbox-root').innerHTML = "";
     }
-
-    // =================== COUNTDOWN (for Dashboard) ===================
-    function CountdownSection() {
-      return `
-      <section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200 flex flex-col items-center" id="countdown-section">
-        <div class="flex justify-between w-full items-center mb-2">
-          <h2 class="text-2xl font-bold text-gray-900">⏳ Countdown to Next Week</h2>
-        </div>
-        <div id="countdown-timer" class="text-4xl font-mono text-red-600 mt-2 mb-1"></div>
-        <p class="text-gray-600" id="countdown-desc">${state.countdown.desc}</p>
-      </section>
-      `;
-    }
+        // =============== COUNTDOWN (for Dashboard) ===============
     function updateCountdown() {
       const now = new Date();
       const target = new Date(state.countdown.nextWeekStart);
@@ -497,14 +694,14 @@
     }
     setInterval(updateCountdown, 1000);
 
-    // =================== MAIN RENDER FUNCTION ===================
+    // =============== MAIN RENDER FUNCTION ===============
     window.renderApp = function() {
       const container = document.getElementById('app');
       container.innerHTML = `
         ${Navigation()}
         <main class="max-w-6xl mx-auto px-4 py-8">
           ${
-            state.activeTab === 'dashboard' ? (CountdownSection() + `<div class="text-center text-gray-500 mt-12">Welcome to the IVTV Summer Camp Dashboard.<br>Use the navigation above to explore Recap Shorts, Student Videos, Gallery, and Week-by-Week info.</div>`) :
+            state.activeTab === 'dashboard' ? Dashboard() :
             state.activeTab === 'posts' ? Posts() :
             state.activeTab === 'files' ? Files() :
             state.activeTab === 'community' ? Community() :
@@ -515,21 +712,23 @@
             `<div class="text-center text-red-500">Page not found.</div>`
           }
         </main>
-        ${state.showAdminLogin ? AdminLoginModal() : ''}
-        ${state.showNewPostForm ? NewPostForm() : ''}
-        ${state.editingPost ? EditPostForm() : ''}
-        ${state.showNewFileForm ? NewFileForm() : ''}
-        ${state.expandedPost ? ExpandedPostModal() : ''}
-        ${state.editingHomepage ? EditHomepageModal() : ''}
-        ${state.editingCommunity ? EditCommunityModal() : ''}
-        ${state.editingCalendar ? EditCalendarModal() : ''}
       `;
       updateCountdown();
-      // ...rest of your modal and event binding logic from Version 11 renderApp, as needed...
     };
 
-    // ========== INITIAL RENDER ==========
+    // ========== ADMIN LOGIN/LOGOUT ==========
+    function handleAdminLogout() {
+      setState({isAdmin: false});
+    }
+
+    // ========== POST EDIT (stub for completeness) ==========
+    function editPost(id) {
+      alert("Post editing not implemented in this version. (You can expand this function as needed.)");
+    }
+
+    // ========== STARTUP ==========
     renderApp();
+
   </script>
 </body>
 </html>
