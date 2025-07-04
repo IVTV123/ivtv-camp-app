@@ -985,11 +985,21 @@
       `;
     }
 
+    function CountdownSection() {
+      return `
+        <section class="text-center py-8 bg-red-600 text-white rounded-lg shadow-md mb-8">
+          <h2 class="text-3xl font-bold mb-2">Next Week Starts In:</h2>
+          <div id="countdown-timer" class="text-5xl font-extrabold tracking-wide mb-2"></div>
+          <p class="text-lg opacity-90">${state.countdown.desc}</p>
+        </section>
+      `;
+    }
+
     function HomepageSection() {
       const homepageBoxes = getHomepageBoxes();
       const currentWeek = getCurrentCampWeek(state);
       return `
-        <section class="text-center py-16 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-xl mb-8">
+        ${CountdownSection()} <section class="text-center py-16 bg-gradient-to-r from-red-700 to-red-900 text-white rounded-lg shadow-xl mb-8">
           <h1 class="text-5xl font-extrabold mb-4">${state.homepageHeroTitle}</h1>
           <p class="text-xl font-light opacity-90">${state.homepageHeroSubtitle}</p>
         </section>
@@ -1097,16 +1107,6 @@
               </div>
             `).join('')}
           </div>
-        </section>
-      `;
-    }
-
-    function CountdownSection() {
-      return `
-        <section class="text-center py-8 bg-red-600 text-white rounded-lg shadow-md mb-8">
-          <h2 class="text-3xl font-bold mb-2">Next Week Starts In:</h2>
-          <div id="countdown-timer" class="text-5xl font-extrabold tracking-wide mb-2"></div>
-          <p class="text-lg opacity-90">${state.countdown.desc}</p>
         </section>
       `;
     }
@@ -1247,7 +1247,7 @@
       }
 
       // Countdown timer for weekByWeek (if on that page, or dashboard if countdown section is always present)
-      if (state.activeTab === 'weekByWeek' || state.activeTab === 'dashboard') { // Assuming countdown is shown on dashboard too, if not, adjust logic
+      if (state.activeTab === 'dashboard' || state.activeTab === 'weekByWeek') {
         const updateCountdown = () => {
           const now = new Date();
           const target = new Date(state.countdown.nextWeekStart);
