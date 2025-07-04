@@ -931,5 +931,463 @@
     // Initial render
     renderApp();
   </script>
+  <!-- ================== BEGIN: Camp Recap Shorts (Admin Editable) ================== -->
+<section class="max-w-4xl mx-auto mt-12 mb-6 bg-white rounded-xl shadow-lg p-6 border border-gray-200" id="recap-shorts-section">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-900">📺 Camp Recap Shorts</h2>
+    <button id="edit-recap-shorts-btn" class="hidden px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200">Edit</button>
+  </div>
+  <div id="recap-shorts-videos" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+  <p class="text-gray-600" id="recap-shorts-desc"></p>
+</section>
+
+<!-- ================== BEGIN: Student-Made Videos (Admin Editable) ================== -->
+<section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200" id="student-videos-section">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-900">🎬 Student-Made Videos</h2>
+    <button id="edit-student-videos-btn" class="hidden px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200">Edit</button>
+  </div>
+  <div id="student-videos-list" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+</section>
+
+<!-- ================== BEGIN: Student-Made Image Gallery (Admin Editable) ================== -->
+<section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200" id="student-gallery-section">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-900">🖼️ Student Image Gallery</h2>
+    <button id="edit-student-gallery-btn" class="hidden px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200">Edit</button>
+  </div>
+  <div id="student-gallery-list" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+</section>
+
+<!-- ================== BEGIN: Countdown to Next Week ================== -->
+<section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200 flex flex-col items-center" id="countdown-section">
+  <div class="flex justify-between w-full items-center mb-2">
+    <h2 class="text-2xl font-bold text-gray-900">⏳ Countdown to Next Week</h2>
+    <button id="edit-countdown-btn" class="hidden px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200">Edit</button>
+  </div>
+  <div id="countdown-timer" class="text-4xl font-mono text-red-600 mt-2 mb-1"></div>
+  <p class="text-gray-600" id="countdown-desc"></p>
+</section>
+
+<!-- ================== BEGIN: Week-by-Week Expectations (Admin Editable) ================== -->
+<section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200" id="week-expect-section">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-2xl font-bold text-gray-900">📅 What to Expect Each Week</h2>
+    <button id="edit-week-expect-btn" class="hidden px-2 py-1 text-xs rounded bg-red-100 text-red-600 hover:bg-red-200">Edit</button>
+  </div>
+  <div id="week-expect-list" class="divide-y"></div>
+</section>
+
+<!-- ================== MODALS for Editing & Lightbox ================== -->
+<div id="edit-modal-root"></div>
+<div id="lightbox-root"></div>
+
+<script>
+/* ========== STATE (Make sure this is merged with your main state object and persisted!) ========== */
+if (!state.recapShorts) state.recapShorts = {
+  videos: [
+    { title: "Week 1 Recap", youtube: "dQw4w9WgXcQ", thumb: "https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg" }
+  ],
+  desc: "Catch up with the best moments from each week of camp! More shorts coming soon."
+};
+if (!state.studentVideos) state.studentVideos = [
+  { title: "News Flash by Team Alpha", desc: "A creative newscast project by our campers!", youtube: "STUDENT_VIDEO_ID_1", thumb: "" },
+  { title: "Behind the Scenes by Team Beta", desc: "Documentary on camp life and teamwork.", youtube: "STUDENT_VIDEO_ID_2", thumb: "" }
+];
+if (!state.studentGallery) state.studentGallery = [
+  { url: "https://placehold.co/400x300", caption: "Team Alpha hard at work" },
+  { url: "https://placehold.co/400x300", caption: "Fun with lighting" }
+];
+if (!state.countdown) state.countdown = {
+  nextWeekStart: "2025-07-07T09:00:00",
+  desc: "Get ready for the next chapter of your camp adventure!"
+};
+if (!state.weekExpect) state.weekExpect = [
+  {
+    title: "Week 1: Camera & Lighting",
+    desc: "Hands-on training with cameras, composition, lighting, and fundamentals of visual storytelling. Expect workshops, group activities, and your first recording projects!"
+  },
+  {
+    title: "Week 2: Editing & Post-Production",
+    desc: "Dive into video editing, sound design, and special effects. You'll learn how to turn raw footage into a finished program using industry tools."
+  },
+  {
+    title: "Week 3: On-Air Presentation",
+    desc: "Step in front of the camera! Practice live presentation, teleprompter reading, and teamwork to produce your own TV segments."
+  }
+];
+
+/* ========== RENDER: Recap Shorts ========== */
+function renderRecapShorts() {
+  let html = "";
+  state.recapShorts.videos.forEach((v, i) => {
+    html += `
+      <div class="relative group cursor-pointer" onclick="showLightbox('video','${v.youtube}')">
+        <img src="${v.thumb || 'https://img.youtube.com/vi/' + v.youtube + '/hqdefault.jpg'}" alt="${v.title}" class="rounded-lg w-full aspect-video object-cover" />
+        <button class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/50 text-white text-4xl rounded-lg"><span>▶</span></button>
+        <div class="mt-1 font-semibold">${v.title}</div>
+      </div>
+    `;
+  });
+  document.getElementById('recap-shorts-videos').innerHTML = html;
+  document.getElementById('recap-shorts-desc').textContent = state.recapShorts.desc;
+}
+/* ========== RENDER: Student Videos ========== */
+function renderStudentVideos() {
+  let html = "";
+  state.studentVideos.forEach((v, i) => {
+    html += `
+      <div class="relative group cursor-pointer" onclick="showLightbox('video','${v.youtube}')">
+        <img src="${v.thumb || 'https://img.youtube.com/vi/' + v.youtube + '/hqdefault.jpg'}" alt="${v.title}" class="rounded-lg w-full aspect-video object-cover" />
+        <button class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/50 text-white text-4xl rounded-lg"><span>▶</span></button>
+        <div class="mt-1 font-semibold">${v.title}</div>
+        <div class="text-sm text-gray-500">${v.desc}</div>
+      </div>
+    `;
+  });
+  document.getElementById('student-videos-list').innerHTML = html;
+}
+/* ========== RENDER: Student Gallery ========== */
+function renderStudentGallery() {
+  let html = "";
+  state.studentGallery.forEach((img, i) => {
+    html += `
+      <div class="cursor-pointer group" onclick="showLightbox('image','${img.url}','${img.caption.replace(/'/g,"&#39;")}')">
+        <img src="${img.url}" alt="${img.caption}" class="rounded-lg w-full aspect-square object-cover group-hover:scale-105 transition" />
+        <div class="text-sm text-center mt-1">${img.caption}</div>
+      </div>
+    `;
+  });
+  document.getElementById('student-gallery-list').innerHTML = html;
+}
+/* ========== RENDER: Countdown ========== */
+function renderCountdown() {
+  document.getElementById('countdown-desc').textContent = state.countdown.desc;
+}
+/* ========== RENDER: Week Expectations ========== */
+function renderWeekExpect() {
+  let html = '';
+  state.weekExpect.forEach((w, i) => {
+    html += `
+      <div class="py-4">
+        <h3 class="text-lg font-semibold text-red-700">${w.title}</h3>
+        <p class="text-gray-700">${w.desc}</p>
+      </div>
+    `;
+  });
+  document.getElementById('week-expect-list').innerHTML = html;
+}
+/* ========== RENDER: Admin Buttons ========== */
+function renderAdminExtraSections() {
+  let admin = !!state.isAdmin;
+  document.getElementById('edit-recap-shorts-btn').style.display = admin ? '' : 'none';
+  document.getElementById('edit-student-videos-btn').style.display = admin ? '' : 'none';
+  document.getElementById('edit-student-gallery-btn').style.display = admin ? '' : 'none';
+  document.getElementById('edit-countdown-btn').style.display = admin ? '' : 'none';
+  document.getElementById('edit-week-expect-btn').style.display = admin ? '' : 'none';
+}
+/* ========== RENDER: All Extra Sections ========== */
+function renderExtraSections() {
+  renderRecapShorts();
+  renderStudentVideos();
+  renderStudentGallery();
+  renderCountdown();
+  renderWeekExpect();
+  renderAdminExtraSections();
+}
+renderExtraSections();
+
+/* ========== COUNTDOWN TIMER ========== */
+function updateCountdown() {
+  const now = new Date();
+  const target = new Date(state.countdown.nextWeekStart);
+  let diff = (target - now) / 1000;
+  if (diff < 0) diff = 0;
+  const days = Math.floor(diff / (3600*24));
+  const hours = Math.floor((diff % (3600*24)) / 3600);
+  const minutes = Math.floor((diff % 3600) / 60);
+  const seconds = Math.floor(diff % 60);
+  document.getElementById('countdown-timer').textContent =
+    `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+/* ========== ADMIN EDIT MODALS ========== */
+// Recap Shorts Edit
+document.getElementById('edit-recap-shorts-btn').onclick = function() {
+  let vlist = state.recapShorts.videos.map((v,i)=>`
+    <div class="mb-2 flex items-center space-x-2">
+      <input value="${v.title.replace(/"/g,'&quot;')}" name="title${i}" class="p-1 border rounded" placeholder="Title" />
+      <input value="${v.youtube}" name="youtube${i}" class="p-1 border rounded" placeholder="YouTube ID"/>
+      <input value="${v.thumb||''}" name="thumb${i}" class="p-1 border rounded" placeholder="Thumbnail URL"/>
+      <button type="button" onclick="removeRecapShortsVid(${i})" class="text-xs text-red-600">Delete</button>
+    </div>
+  `).join('');
+  document.getElementById('edit-modal-root').innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <form class="bg-white rounded-xl p-6 max-w-lg w-full" id="edit-recap-shorts-form">
+        <h3 class="text-lg font-bold mb-4">Edit Camp Recap Shorts</h3>
+        <div id="recap-shorts-edit-list">${vlist}</div>
+        <button type="button" onclick="addRecapShortsVid()" class="mb-4 px-2 py-1 bg-gray-200 rounded">Add Video</button>
+        <textarea name="desc" class="w-full border rounded p-2 mb-4" rows="2" placeholder="Description">${state.recapShorts.desc}</textarea>
+        <div class="flex gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.getElementById('edit-recap-shorts-form').onsubmit = function(e) {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    let vids = [], i = 0;
+    while (fd.has(`title${i}`)) {
+      if(fd.get(`title${i}`) && fd.get(`youtube${i}`)) {
+        vids.push({
+          title: fd.get(`title${i}`),
+          youtube: fd.get(`youtube${i}`),
+          thumb: fd.get(`thumb${i}`)
+        });
+      }
+      i++;
+    }
+    setState({recapShorts:{videos: vids, desc: fd.get('desc')}});
+    closeEditModal();
+    renderExtraSections();
+  }
+};
+window.addRecapShortsVid = function() {
+  state.recapShorts.videos.push({title:"",youtube:"",thumb:""});
+  renderAdminExtraSections();
+  document.getElementById('edit-recap-shorts-btn').click();
+};
+window.removeRecapShortsVid = function(idx) {
+  state.recapShorts.videos.splice(idx,1);
+  renderAdminExtraSections();
+  document.getElementById('edit-recap-shorts-btn').click();
+};
+// Student Videos Edit
+document.getElementById('edit-student-videos-btn').onclick = function() {
+  let vlist = state.studentVideos.map((v,i)=>`
+    <div class="mb-2 flex items-center space-x-2">
+      <input value="${v.title.replace(/"/g,'&quot;')}" name="title${i}" class="p-1 border rounded" placeholder="Title" />
+      <input value="${v.youtube}" name="youtube${i}" class="p-1 border rounded" placeholder="YouTube ID"/>
+      <input value="${v.thumb||''}" name="thumb${i}" class="p-1 border rounded" placeholder="Thumbnail URL"/>
+      <input value="${v.desc.replace(/"/g,'&quot;')}" name="desc${i}" class="p-1 border rounded" placeholder="Description"/>
+      <button type="button" onclick="removeStudentVideo(${i})" class="text-xs text-red-600">Delete</button>
+    </div>
+  `).join('');
+  document.getElementById('edit-modal-root').innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <form class="bg-white rounded-xl p-6 max-w-lg w-full" id="edit-student-videos-form">
+        <h3 class="text-lg font-bold mb-4">Edit Student Videos</h3>
+        <div id="student-videos-edit-list">${vlist}</div>
+        <button type="button" onclick="addStudentVideo()" class="mb-4 px-2 py-1 bg-gray-200 rounded">Add Video</button>
+        <div class="flex gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.getElementById('edit-student-videos-form').onsubmit = function(e) {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    let vids = [], i = 0;
+    while (fd.has(`title${i}`)) {
+      if (fd.get(`title${i}`) && fd.get(`youtube${i}`)) {
+        vids.push({
+          title: fd.get(`title${i}`),
+          youtube: fd.get(`youtube${i}`),
+          thumb: fd.get(`thumb${i}`),
+          desc: fd.get(`desc${i}`)
+        });
+      }
+      i++;
+    }
+    setState({studentVideos: vids});
+    closeEditModal();
+    renderExtraSections();
+  }
+};
+window.addStudentVideo = function() {
+  state.studentVideos.push({title:"",youtube:"",thumb:"",desc:""});
+  renderAdminExtraSections();
+  document.getElementById('edit-student-videos-btn').click();
+};
+window.removeStudentVideo = function(idx) {
+  state.studentVideos.splice(idx,1);
+  renderAdminExtraSections();
+  document.getElementById('edit-student-videos-btn').click();
+};
+// Student Gallery Edit
+document.getElementById('edit-student-gallery-btn').onclick = function() {
+  let glist = state.studentGallery.map((img,i)=>`
+    <div class="mb-2 flex items-center space-x-2">
+      <input value="${img.url}" name="url${i}" class="p-1 border rounded" placeholder="Image URL"/>
+      <input value="${img.caption.replace(/"/g,'&quot;')}" name="caption${i}" class="p-1 border rounded" placeholder="Caption"/>
+      <button type="button" onclick="removeStudentGalleryImg(${i})" class="text-xs text-red-600">Delete</button>
+    </div>
+  `).join('');
+  document.getElementById('edit-modal-root').innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <form class="bg-white rounded-xl p-6 max-w-lg w-full" id="edit-student-gallery-form">
+        <h3 class="text-lg font-bold mb-4">Edit Student Gallery</h3>
+        <div id="student-gallery-edit-list">${glist}</div>
+        <button type="button" onclick="addStudentGalleryImg()" class="mb-4 px-2 py-1 bg-gray-200 rounded">Add Image</button>
+        <div class="flex gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.getElementById('edit-student-gallery-form').onsubmit = function(e) {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    let imgs = [], i = 0;
+    while (fd.has(`url${i}`)) {
+      if (fd.get(`url${i}`)) {
+        imgs.push({
+          url: fd.get(`url${i}`),
+          caption: fd.get(`caption${i}`)
+        });
+      }
+      i++;
+    }
+    setState({studentGallery: imgs});
+    closeEditModal();
+    renderExtraSections();
+  }
+};
+window.addStudentGalleryImg = function() {
+  state.studentGallery.push({url:"",caption:""});
+  renderAdminExtraSections();
+  document.getElementById('edit-student-gallery-btn').click();
+};
+window.removeStudentGalleryImg = function(idx) {
+  state.studentGallery.splice(idx,1);
+  renderAdminExtraSections();
+  document.getElementById('edit-student-gallery-btn').click();
+};
+// Countdown Edit
+document.getElementById('edit-countdown-btn').onclick = function() {
+  document.getElementById('edit-modal-root').innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <form class="bg-white rounded-xl p-6 max-w-lg w-full" id="edit-countdown-form">
+        <h3 class="text-lg font-bold mb-4">Edit Countdown</h3>
+        <input class="w-full mb-2 border rounded p-2" name="date" type="datetime-local" value="${state.countdown.nextWeekStart.slice(0,16)}"/>
+        <textarea class="w-full mb-4 border rounded p-2" name="desc" rows="2">${state.countdown.desc}</textarea>
+        <div class="flex gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.getElementById('edit-countdown-form').onsubmit = function(e) {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    setState({countdown:{nextWeekStart: fd.get('date'), desc: fd.get('desc')}});
+    closeEditModal();
+    renderExtraSections();
+  }
+};
+// Week Expectations Edit
+document.getElementById('edit-week-expect-btn').onclick = function() {
+  let wlist = state.weekExpect.map((w,i)=>`
+    <div class="mb-2">
+      <input value="${w.title.replace(/"/g,'&quot;')}" name="title${i}" class="w-full p-1 border rounded mb-1" placeholder="Week Title"/>
+      <textarea name="desc${i}" class="w-full p-1 border rounded" rows="2" placeholder="Description">${w.desc}</textarea>
+      <button type="button" onclick="removeWeekExpect(${i})" class="text-xs text-red-600">Delete</button>
+    </div>
+  `).join('');
+  document.getElementById('edit-modal-root').innerHTML = `
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <form class="bg-white rounded-xl p-6 max-w-lg w-full" id="edit-week-expect-form">
+        <h3 class="text-lg font-bold mb-4">Edit Week-by-Week Expectations</h3>
+        <div id="week-expect-edit-list">${wlist}</div>
+        <button type="button" onclick="addWeekExpect()" class="mb-4 px-2 py-1 bg-gray-200 rounded">Add Week</button>
+        <div class="flex gap-2">
+          <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded">Save</button>
+          <button type="button" onclick="closeEditModal()" class="bg-gray-300 px-4 py-2 rounded">Cancel</button>
+        </div>
+      </form>
+    </div>
+  `;
+  document.getElementById('edit-week-expect-form').onsubmit = function(e) {
+    e.preventDefault();
+    let fd = new FormData(e.target);
+    let weeks = [], i = 0;
+    while (fd.has(`title${i}`)) {
+      if (fd.get(`title${i}`)) {
+        weeks.push({
+          title: fd.get(`title${i}`),
+          desc: fd.get(`desc${i}`)
+        });
+      }
+      i++;
+    }
+    setState({weekExpect: weeks});
+    closeEditModal();
+    renderExtraSections();
+  }
+};
+window.addWeekExpect = function() {
+  state.weekExpect.push({title:"",desc:""});
+  renderAdminExtraSections();
+  document.getElementById('edit-week-expect-btn').click();
+};
+window.removeWeekExpect = function(idx) {
+  state.weekExpect.splice(idx,1);
+  renderAdminExtraSections();
+  document.getElementById('edit-week-expect-btn').click();
+};
+function closeEditModal() {
+  document.getElementById('edit-modal-root').innerHTML = "";
+}
+/* ========== LIGHTBOX (Gallery/Video/Photo) ========== */
+function showLightbox(type, src, caption) {
+  let content = "";
+  if (type === "video") {
+    content = `<iframe src="https://www.youtube.com/embed/${src}" allowfullscreen class="w-full h-96 rounded-xl"></iframe>`;
+  } else if (type === "image") {
+    content = `<img src="${src}" class="rounded-xl max-w-full max-h-[80vh] mx-auto" alt="${caption || ""}"/>
+               <div class="mt-2 text-center font-semibold">${caption||""}</div>`;
+  }
+  document.getElementById('lightbox-root').innerHTML = `
+    <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50" onclick="closeLightbox()">
+      <div class="relative bg-white rounded-xl p-4" onclick="event.stopPropagation()">
+        <button onclick="closeLightbox()" class="absolute top-2 right-2 text-gray-600 text-2xl">&times;</button>
+        ${content}
+      </div>
+    </div>
+  `;
+}
+function closeLightbox() {
+  document.getElementById('lightbox-root').innerHTML = "";
+}
+
+/* ========== PATCH: Render updated sections after setState ========== */
+const oldSetState = window.setState;
+window.setState = function(obj) {
+  oldSetState(obj);
+  renderExtraSections();
+};
+window.renderExtraSections = renderExtraSections;
+/* ========== Patch: Show admin edit buttons on state change ========== */
+if (window.renderApp) {
+  const oldRenderApp = window.renderApp;
+  window.renderApp = function() {
+    oldRenderApp();
+    renderExtraSections();
+  };
+}
+/* ========== PATCH: Show/hide admin edit buttons on login/logout ========== */
+document.addEventListener('DOMContentLoaded', function() {
+  renderExtraSections();
+});
+</script>
 </body>
 </html>
