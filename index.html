@@ -33,7 +33,7 @@
       VideoRed: `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="3" y="7" width="15" height="10" rx="2"/><polygon points="16 7 22 12 16 17 16 7"/></svg>`,
       CameraRed: `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2"/><circle cx="12" cy="14.5" r="3.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
     };
-        // ========== Helpers ==========
+    // ========== Helpers ==========
     function getTimeAgo(dateStr) {
       const now = new Date();
       const then = new Date(dateStr);
@@ -60,7 +60,6 @@
       }
       return state.campCalendar && state.campCalendar[state.campCalendar.length - 1] || null;
     }
-
     // ================= STATE & LOCALSTORAGE ==================
     const state = {
       activeTab: 'dashboard',
@@ -192,7 +191,6 @@
         }
       ]
     };
-
     // --- Load saved state from localStorage if available ---
     let saved = localStorage.getItem('ivtvCampState');
     if (saved) {
@@ -200,7 +198,6 @@
         Object.assign(state, JSON.parse(saved));
       } catch (e) {}
     }
-
     // --- setState now also persists to localStorage ---
     function setState(newValues) {
       Object.assign(state, newValues);
@@ -209,7 +206,6 @@
       } catch (e) {}
       renderApp();
     }
-
     // ================= APP NAVIGATION ==================
     const extraTabs = [
       { tab: 'recapShorts', label: 'Recap Shorts', icon: SVG.Video },
@@ -272,9 +268,8 @@
         </nav>
       `;
     }
-        // =================== PAGE RENDER FUNCTIONS ===================
+    // =================== PAGE RENDER FUNCTIONS ===================
     // Dashboard, Posts, Files, Community, Recap Shorts, Student Videos, Gallery, Week-by-Week
-
     function Dashboard() {
       return `
         <section class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200 flex flex-col items-center" id="countdown-section">
@@ -290,7 +285,6 @@
         </div>
       `;
     }
-
     function Posts() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -322,7 +316,6 @@
         </div>
       `;
     }
-
     function Files() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -349,7 +342,6 @@
         </div>
       `;
     }
-
     function Community() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -378,9 +370,7 @@
         </div>
       `;
     }
-
-    // ...Extra page render functions, modals, and lightbox come in the next chunk!...
-        // ========== Extra Pages ==========
+    // ========== Extra Pages ==========
     function RecapShortsPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -401,7 +391,6 @@
         </div>
       `;
     }
-
     function StudentVideosPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -422,7 +411,6 @@
         </div>
       `;
     }
-
     function StudentGalleryPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -441,7 +429,6 @@
         </div>
       `;
     }
-
     function WeekExpectPage() {
       return `
         <div class="max-w-4xl mx-auto my-12 bg-white rounded-xl shadow-lg p-6 border border-gray-200">
@@ -460,9 +447,7 @@
         </div>
       `;
     }
-
-    // ...Admin modals, lightbox, and main render function in next chunk!...
-        // =================== ADMIN MODALS FOR EXTRA PAGES ===================
+    // =================== ADMIN MODALS FOR EXTRA PAGES ===================
     function editRecapShortsModal() {
       let vlist = state.recapShorts.videos.map((v,i)=>`
         <div class="mb-2 flex items-center space-x-2">
@@ -657,7 +642,6 @@
     function closeEditModal() {
       document.getElementById('edit-modal-root').innerHTML = "";
     }
-
     // =================== LIGHTBOX ===================
     function showLightbox(type, src, caption) {
       let content = "";
@@ -679,7 +663,7 @@
     function closeLightbox() {
       document.getElementById('lightbox-root').innerHTML = "";
     }
-        // =============== COUNTDOWN (for Dashboard) ===============
+    // =============== COUNTDOWN (for Dashboard) ===============
     function updateCountdown() {
       const now = new Date();
       const target = new Date(state.countdown.nextWeekStart);
@@ -693,7 +677,6 @@
       if (e) e.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
     }
     setInterval(updateCountdown, 1000);
-
     // =============== MAIN RENDER FUNCTION ===============
     window.renderApp = function() {
       const container = document.getElementById('app');
@@ -715,20 +698,16 @@
       `;
       updateCountdown();
     };
-
     // ========== ADMIN LOGIN/LOGOUT ==========
     function handleAdminLogout() {
       setState({isAdmin: false});
     }
-
     // ========== POST EDIT (stub for completeness) ==========
     function editPost(id) {
       alert("Post editing not implemented in this version. (You can expand this function as needed.)");
     }
-
     // ========== STARTUP ==========
     renderApp();
-
   </script>
 </body>
 </html>
