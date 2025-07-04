@@ -33,7 +33,7 @@
       CameraRed: `<svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><rect x="2" y="7" width="20" height="15" rx="2"/><circle cx="12" cy="14.5" r="3.5"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>`
     };
 
-    // App state
+    // Editable state for homepage and community page
     const state = {
       activeTab: 'dashboard',
       mobileMenuOpen: false,
@@ -43,7 +43,42 @@
       showNewPostForm: false,
       showNewFileForm: false,
       editingPost: null,
-      expandedPost: null, // <-- NEW for expanded modal!
+      expandedPost: null,
+      homepageHeroTitle: 'Welcome to IVTV Summer Camp',
+      homepageHeroSubtitle: 'Professional TV Production Training • Summer 2025',
+      homepageBoxes: [
+        {
+          title: "This Week",
+          icon: "Video",
+          text: "Advanced Camera Techniques & Lighting Design",
+          bottomLabel: "Progress:",
+          bottomValue: "Day 3 of 5"
+        },
+        {
+          title: "Recent Activity",
+          icon: "Bell",
+          text: "3 new posts from instructors",
+          bottomLabel: "Last update:",
+          bottomValue: "2 hours ago"
+        },
+        {
+          title: "Files Shared",
+          icon: "FileText",
+          text: "Equipment lists and project guidelines",
+          bottomLabel: "Total files:",
+          bottomValue: () => state.files.length
+        },
+      ],
+      instructors: [
+        { name: "Sarah Johnson", title: "Camera & Lighting Specialist", initial: "S" },
+        { name: "Mike Chen", title: "Audio & Post-Production", initial: "M" }
+      ],
+      campStats: [
+        { label: "Total Students:", value: "24" },
+        { label: "Projects Started:", value: "8" },
+        { label: "Skills Workshops:", value: "12" },
+        { label: "Days Remaining:", value: "12", highlight: true }
+      ],
       posts: [
         {
           id: 1,
@@ -100,7 +135,9 @@
           size: '3.2 MB',
           uploadDate: '2025-07-03'
         }
-      ]
+      ],
+      editingHomepage: false,
+      editingCommunity: false,
     };
 
     function setState(newValues) {
@@ -164,6 +201,14 @@
       }
     }
 
+    function expandPost(postId) {
+      const post = state.posts.find(p => p.id == postId);
+      setState({expandedPost: post});
+    }
+    function closeExpandedPost() {
+      setState({expandedPost: null});
+    }
+
     function Navigation() {
       return `
       <nav class="bg-gray-900 text-white p-4 sticky top-0 z-50">
@@ -221,35 +266,28 @@
     function Dashboard() {
       return `
       <div class="space-y-6">
-        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-xl">
-          <h1 class="text-3xl font-bold mb-2">Welcome to IVTV Summer Camp</h1>
-          <p class="text-red-100">Professional TV Production Training • Summer 2025</p>
+        <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-6 rounded-xl flex flex-col sm:flex-row items-center gap-6">
+          <div>
+            <h1 class="text-3xl font-bold mb-2">${state.homepageHeroTitle}
+            ${state.isAdmin ? `<button onclick="setState({editingHomepage:true})" class="ml-2 px-2 py-1 rounded bg-white/20 hover:bg-white/40 text-xs">Edit</button>` : ""}
+            </h1>
+            <p class="text-red-100">${state.homepageHeroSubtitle}</p>
+          </div>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800">This Week</h3>
-              <span class="text-red-500">${SVG.Video}</span>
+          ${state.homepageBoxes.map((box, i) => `
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">${box.title}</h3>
+                <span class="text-red-500">${SVG[box.icon]}</span>
+              </div>
+              <p class="text-gray-600 mb-4">${box.text}</p>
+              <div class="text-sm text-gray-500 flex justify-between">
+                <span>${box.bottomLabel}</span>
+                <span class="font-semibold">${typeof box.bottomValue === "function" ? box.bottomValue() : box.bottomValue}</span>
+              </div>
             </div>
-            <p class="text-gray-600 mb-4">Advanced Camera Techniques & Lighting Design</p>
-            <div class="text-sm text-gray-500 flex justify-between"><span>Progress:</span><span class="font-semibold">Day 3 of 5</span></div>
-          </div>
-          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
-              <span class="text-red-500">${SVG.Bell}</span>
-            </div>
-            <p class="text-gray-600 mb-4">3 new posts from instructors</p>
-            <div class="text-sm text-gray-500 flex justify-between"><span>Last update:</span><span class="font-semibold">2 hours ago</span></div>
-          </div>
-          <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-lg font-semibold text-gray-800">Files Shared</h3>
-              <span class="text-red-500">${SVG.FileText}</span>
-            </div>
-            <p class="text-gray-600 mb-4">Equipment lists and project guidelines</p>
-            <div class="text-sm text-gray-500 flex justify-between"><span>Total files:</span><span class="font-semibold">${state.files.length}</span></div>
-          </div>
+          `).join('')}
         </div>
         <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
           <h3 class="text-xl font-semibold text-gray-800 mb-4">Latest Updates</h3>
@@ -275,6 +313,44 @@
             `).join('')}
           </div>
         </div>
+      </div>
+      `;
+    }
+
+    function EditHomepageModal() {
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <form id="edit-homepage-form" class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Edit Homepage</h3>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-1">Hero Title</label>
+            <input type="text" name="heroTitle" value="${state.homepageHeroTitle.replace(/"/g,'&quot;')}" class="w-full p-2 border border-gray-300 rounded-lg mb-2"/>
+            <label class="block text-sm font-medium mb-1">Hero Subtitle</label>
+            <input type="text" name="heroSubtitle" value="${state.homepageHeroSubtitle.replace(/"/g,'&quot;')}" class="w-full p-2 border border-gray-300 rounded-lg"/>
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-semibold mb-2">Three Main Boxes</label>
+            ${state.homepageBoxes.map((box, idx) => `
+              <div class="mb-4 border rounded-lg p-3">
+                <label class="text-xs font-bold block mb-1">Box ${idx+1}</label>
+                <input type="text" name="boxTitle${idx}" value="${box.title.replace(/"/g,'&quot;')}" class="w-full p-1 mb-1 border border-gray-200 rounded" placeholder="Title"/>
+                <select name="boxIcon${idx}" class="w-full p-1 mb-1 border border-gray-200 rounded">
+                  <option value="Video" ${box.icon==='Video'?'selected':''}>Video</option>
+                  <option value="Bell" ${box.icon==='Bell'?'selected':''}>Bell</option>
+                  <option value="FileText" ${box.icon==='FileText'?'selected':''}>FileText</option>
+                </select>
+                <input type="text" name="boxText${idx}" value="${box.text.replace(/"/g,'&quot;')}" class="w-full p-1 mb-1 border border-gray-200 rounded" placeholder="Text"/>
+                <input type="text" name="boxBottomLabel${idx}" value="${box.bottomLabel.replace(/"/g,'&quot;')}" class="w-full p-1 mb-1 border border-gray-200 rounded" placeholder="Bottom label"/>
+                <input type="text" name="boxBottomValue${idx}" value="${typeof box.bottomValue==='function'?'':box.bottomValue}" class="w-full p-1 border border-gray-200 rounded" placeholder="Bottom value"/>
+                ${idx===2?`<div class="text-xs text-gray-500 mt-1">Leave blank to auto-count files</div>`:""}
+              </div>
+            `).join('')}
+          </div>
+          <div class="flex space-x-2">
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Save</button>
+            <button type="button" onclick="setState({editingHomepage:false})" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+          </div>
+        </form>
       </div>
       `;
     }
@@ -345,50 +421,6 @@
       `;
     }
 
-    // New: Big Post Modal
-    function ExpandedPostModal() {
-      const post = state.expandedPost;
-      if (!post) return '';
-      return `
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-          <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl mx-2 relative animate-fadein">
-            <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl" onclick="closeExpandedPost()" aria-label="Close">${SVG.X}</button>
-            <div>
-              <div class="flex items-center space-x-2 mb-1">
-                <span class="px-2 py-1 rounded-full text-xs font-semibold ${
-                  post.type === 'video' ? 'bg-red-100 text-red-800' :
-                  post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
-                  'bg-green-100 text-green-800'
-                }">${post.type.toUpperCase()}</span>
-                <span class="text-sm text-gray-500">${post.date}</span>
-              </div>
-              <h2 class="text-2xl font-bold text-gray-800 mb-2">${post.title}</h2>
-              <div class="mb-4 text-gray-600">${post.content}</div>
-              <div class="flex items-center space-x-4 mb-4">
-                <span class="text-sm text-gray-500">By ${post.author}</span>
-                <span class="flex items-center space-x-1 text-gray-500">${SVG.Heart}<span>${post.likes}</span></span>
-                <span class="flex items-center space-x-1 text-gray-500">${SVG.MessageCircle}<span>${post.comments}</span></span>
-              </div>
-              ${post.type === 'photo' && post.thumbnail ? `<img src="${post.thumbnail}" alt="Photo post" class="rounded-lg border w-full max-h-72 object-cover mb-4">` : ''}
-              ${post.type === 'video' && post.thumbnail ? `<div class="w-full flex justify-center mb-4"><img src="${post.thumbnail}" alt="Video thumbnail" class="rounded-lg border w-full max-h-72 object-cover"></div>` : ''}
-            </div>
-          </div>
-        </div>
-        <style>
-          .animate-fadein { animation: fadein .2s; }
-          @keyframes fadein { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
-        </style>
-      `;
-    }
-
-    function expandPost(postId) {
-      const post = state.posts.find(p => p.id == postId);
-      setState({expandedPost: post});
-    }
-    function closeExpandedPost() {
-      setState({expandedPost: null});
-    }
-
     function Files() {
       return `
       <div class="space-y-6">
@@ -434,34 +466,34 @@
     function Community() {
       return `
       <div class="space-y-6">
-        <h2 class="text-2xl font-bold text-gray-800">Community</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold text-gray-800">Community</h2>
+          ${state.isAdmin ? `<button onclick="setState({editingCommunity:true})" class="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200">Edit</button>` : ''}
+        </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Instructors</h3>
             <div class="space-y-4">
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">S</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Sarah Johnson</p>
-                  <p class="text-sm text-gray-600">Camera & Lighting Specialist</p>
+              ${state.instructors.map(inst => `
+                <div class="flex items-center space-x-3">
+                  <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">${inst.initial}</div>
+                  <div>
+                    <p class="font-semibold text-gray-800">${inst.name}</p>
+                    <p class="text-sm text-gray-600">${inst.title}</p>
+                  </div>
                 </div>
-              </div>
-              <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-semibold">M</div>
-                <div>
-                  <p class="font-semibold text-gray-800">Mike Chen</p>
-                  <p class="text-sm text-gray-600">Audio & Post-Production</p>
-                </div>
-              </div>
+              `).join('')}
             </div>
           </div>
           <div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Camp Stats</h3>
             <div class="space-y-3">
-              <div class="flex justify-between"><span class="text-gray-600">Total Students:</span><span class="font-semibold">24</span></div>
-              <div class="flex justify-between"><span class="text-gray-600">Projects Started:</span><span class="font-semibold">8</span></div>
-              <div class="flex justify-between"><span class="text-gray-600">Skills Workshops:</span><span class="font-semibold">12</span></div>
-              <div class="flex justify-between"><span class="text-gray-600">Days Remaining:</span><span class="font-semibold text-red-600">12</span></div>
+              ${state.campStats.map(stat => `
+                <div class="flex justify-between">
+                  <span class="text-gray-600">${stat.label}</span>
+                  <span class="font-semibold${stat.highlight ? ' text-red-600' : ''}">${stat.value}</span>
+                </div>
+              `).join('')}
             </div>
           </div>
         </div>
@@ -469,6 +501,79 @@
       `;
     }
 
+    function EditCommunityModal() {
+      return `
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <form id="edit-community-form" class="bg-white p-6 rounded-xl shadow-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Edit Community</h3>
+          <div class="mb-6">
+            <label class="block text-sm font-semibold mb-2">Instructors</label>
+            ${state.instructors.map((inst, idx) => `
+              <div class="mb-4 border rounded-lg p-3">
+                <label class="text-xs font-bold block mb-1">Instructor ${idx+1}</label>
+                <input type="text" name="instInitial${idx}" value="${inst.initial}" class="w-12 mr-2 p-1 border border-gray-200 rounded" placeholder="Initial" maxlength="1"/>
+                <input type="text" name="instName${idx}" value="${inst.name.replace(/"/g,'&quot;')}" class="w-1/3 mr-2 p-1 border border-gray-200 rounded" placeholder="Name"/>
+                <input type="text" name="instTitle${idx}" value="${inst.title.replace(/"/g,'&quot;')}" class="w-1/2 p-1 border border-gray-200 rounded" placeholder="Title"/>
+              </div>
+            `).join('')}
+          </div>
+          <div class="mb-6">
+            <label class="block text-sm font-semibold mb-2">Camp Stats</label>
+            ${state.campStats.map((stat, idx) => `
+              <div class="mb-2 flex items-center">
+                <input type="text" name="statLabel${idx}" value="${stat.label.replace(/"/g,'&quot;')}" class="w-1/2 mr-2 p-1 border border-gray-200 rounded" placeholder="Label"/>
+                <input type="text" name="statValue${idx}" value="${stat.value.replace(/"/g,'&quot;')}" class="w-1/4 mr-2 p-1 border border-gray-200 rounded" placeholder="Value"/>
+                <label class="text-xs flex items-center space-x-1">
+                  <input type="checkbox" name="statHighlight${idx}" ${stat.highlight ? "checked" : ""}/>
+                  <span>Red</span>
+                </label>
+              </div>
+            `).join('')}
+          </div>
+          <div class="flex space-x-2">
+            <button type="submit" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">Save</button>
+            <button type="button" onclick="setState({editingCommunity:false})" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400">Cancel</button>
+          </div>
+        </form>
+      </div>
+      `;
+    }
+
+    // --- Modal components from v3 ---
+    function ExpandedPostModal() {
+      const post = state.expandedPost;
+      if (!post) return '';
+      return `
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl mx-2 relative animate-fadein">
+            <button class="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl" onclick="closeExpandedPost()" aria-label="Close">${SVG.X}</button>
+            <div>
+              <div class="flex items-center space-x-2 mb-1">
+                <span class="px-2 py-1 rounded-full text-xs font-semibold ${
+                  post.type === 'video' ? 'bg-red-100 text-red-800' :
+                  post.type === 'photo' ? 'bg-blue-100 text-blue-800' :
+                  'bg-green-100 text-green-800'
+                }">${post.type.toUpperCase()}</span>
+                <span class="text-sm text-gray-500">${post.date}</span>
+              </div>
+              <h2 class="text-2xl font-bold text-gray-800 mb-2">${post.title}</h2>
+              <div class="mb-4 text-gray-600">${post.content}</div>
+              <div class="flex items-center space-x-4 mb-4">
+                <span class="text-sm text-gray-500">By ${post.author}</span>
+                <span class="flex items-center space-x-1 text-gray-500">${SVG.Heart}<span>${post.likes}</span></span>
+                <span class="flex items-center space-x-1 text-gray-500">${SVG.MessageCircle}<span>${post.comments}</span></span>
+              </div>
+              ${post.type === 'photo' && post.thumbnail ? `<img src="${post.thumbnail}" alt="Photo post" class="rounded-lg border w-full max-h-72 object-cover mb-4">` : ''}
+              ${post.type === 'video' && post.thumbnail ? `<div class="w-full flex justify-center mb-4"><img src="${post.thumbnail}" alt="Video thumbnail" class="rounded-lg border w-full max-h-72 object-cover"></div>` : ''}
+            </div>
+          </div>
+        </div>
+        <style>
+          .animate-fadein { animation: fadein .2s; }
+          @keyframes fadein { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+        </style>
+      `;
+    }
     function AdminLoginModal() {
       return `
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -487,7 +592,6 @@
       </div>
       `;
     }
-
     function NewPostForm() {
       return `
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -525,7 +629,6 @@
       </div>
       `;
     }
-
     function EditPostForm() {
       const post = state.editingPost;
       return `
@@ -564,7 +667,6 @@
       </div>
       `;
     }
-
     function NewFileForm() {
       return `
       <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -628,9 +730,14 @@
         ${
           state.expandedPost ? ExpandedPostModal() : ''
         }
+        ${
+          state.editingHomepage ? EditHomepageModal() : ''
+        }
+        ${
+          state.editingCommunity ? EditCommunityModal() : ''
+        }
       `;
 
-      // Modal input logic
       if (state.showAdminLogin) {
         const input = document.getElementById('admin-password-input');
         input.focus();
@@ -655,7 +762,43 @@
           handleNewFile(e.target);
         };
       }
-      // Modal close on ESC for expanded post
+      if (state.editingHomepage) {
+        document.getElementById('edit-homepage-form').onsubmit = function(e) {
+          e.preventDefault();
+          const fd = new FormData(e.target);
+          setState({
+            homepageHeroTitle: fd.get("heroTitle"),
+            homepageHeroSubtitle: fd.get("heroSubtitle"),
+            homepageBoxes: [0,1,2].map(idx => ({
+              title: fd.get(`boxTitle${idx}`),
+              icon: fd.get(`boxIcon${idx}`),
+              text: fd.get(`boxText${idx}`),
+              bottomLabel: fd.get(`boxBottomLabel${idx}`),
+              bottomValue: idx===2 && !fd.get(`boxBottomValue${idx}`) ? () => state.files.length : fd.get(`boxBottomValue${idx}`)
+            })),
+            editingHomepage: false
+          });
+        };
+      }
+      if (state.editingCommunity) {
+        document.getElementById('edit-community-form').onsubmit = function(e) {
+          e.preventDefault();
+          const fd = new FormData(e.target);
+          setState({
+            instructors: [0,1].map(idx => ({
+              initial: fd.get(`instInitial${idx}`),
+              name: fd.get(`instName${idx}`),
+              title: fd.get(`instTitle${idx}`)
+            })),
+            campStats: [0,1,2,3].map(idx => ({
+              label: fd.get(`statLabel${idx}`),
+              value: fd.get(`statValue${idx}`),
+              highlight: fd.get(`statHighlight${idx}`) === "on"
+            })),
+            editingCommunity: false
+          });
+        };
+      }
       if (state.expandedPost) {
         document.addEventListener('keydown', onKeyDownExpandModal);
       } else {
@@ -667,9 +810,6 @@
       if (e.key === "Escape") closeExpandedPost();
     }
 
-    // Initial render
-    renderApp();
-
     // Expose functions for global onclick
     window.setState = setState;
     window.handleAdminLogin = handleAdminLogin;
@@ -678,6 +818,9 @@
     window.handleDeleteFile = handleDeleteFile;
     window.expandPost = expandPost;
     window.closeExpandedPost = closeExpandedPost;
+
+    // Initial render
+    renderApp();
   </script>
 </body>
 </html>
